@@ -9,6 +9,7 @@ const HtmlWebpackPlugin = require('html-webpack-plugin')
 const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 const postcssPresetEnv = require('postcss-preset-env')
 const cssnano = require('cssnano')
+const CopyWebpackPlugin = require('copy-webpack-plugin')
 
 let isProd = args.prod
 let isDev = args.dev
@@ -43,7 +44,8 @@ let plugins = [
   new webpack.DefinePlugin({
     'process.env.CLIENT_ID': JSON.stringify(process.env.CLIENT_ID),
     'process.env.API_KEY': JSON.stringify(process.env.API_KEY)
-  })
+  }),
+  new CopyWebpackPlugin([ { from: 'src/static', to: 'assets' } ])
 ]
 
 if (isProd) {

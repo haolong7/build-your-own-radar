@@ -10,9 +10,11 @@ const QueryParams = require('../util/queryParamProcessor')
 
 const MIN_BLIP_WIDTH = 12
 const ANIMATION_DURATION = 1000
+const MOBILE_WIDTH = 700
 
 const Radar = function (size, radar) {
   var svg, radarElement, quadrantButtons, buttonsGroup, header, alternativeDiv
+    var isMobile = size < MOBILE_WIDTH;
 
   var tip = d3tip().attr('class', 'd3-tip').html(function (text) {
     return text
@@ -331,8 +333,8 @@ const Radar = function (size, radar) {
     var y = 10
 
     if (order === 'first') {
-      x = 4 * size / 5
-      y = 1 * size / 5
+      x = (isMobile ? 2 : 1) * size / 5
+      y = 1 * size / 5 - (isMobile ? 90 : 0)
     }
 
     if (order === 'second') {
@@ -346,7 +348,7 @@ const Radar = function (size, radar) {
     }
 
     if (order === 'fourth') {
-      x = 4 * size / 5
+      x = (isMobile ? 1 : 4) * size / 5
       y = 4 * size / 5
     }
 
@@ -378,7 +380,8 @@ const Radar = function (size, radar) {
     removeHomeLink()
     removeRadarLegend()
     tip.hide()
-    d3.selectAll('g.blip-link').attr('opacity', 1.0)
+      // svg.attr('id', 'radar-plot').attr('width', size).attr('height', size)
+      d3.selectAll('g.blip-link').attr('opacity', 1.0)
 
     svg.style('left', 0).style('right', 0)
 
@@ -531,8 +534,11 @@ const Radar = function (size, radar) {
     d3.selectAll('.quadrant-table').classed('selected', false)
     d3.selectAll('.quadrant-table.' + order).classed('selected', true)
     d3.selectAll('.blip-item-description').classed('expanded', false)
-
-    var scale = 2
+      // if(isMobile){
+      //     svg.attr('width', size * 0.5)
+      //     svg.attr('height', size * 0.8)
+      // }
+    var scale = isMobile ? 1.5 : 2;
 
     var adjustX = Math.sin(toRadian(startAngle)) - Math.cos(toRadian(startAngle))
     var adjustY = Math.cos(toRadian(startAngle)) + Math.sin(toRadian(startAngle))
@@ -543,9 +549,8 @@ const Radar = function (size, radar) {
     var translateXAll = (1 - adjustX) / 2 * size * scale / 2 + ((1 - adjustX) / 2 * (1 - scale / 2) * size)
     var translateYAll = (1 + adjustY) / 2 * size * scale / 2
 
-    var moveRight = (1 + adjustX) * (0.8 * window.innerWidth - size) / 2
+    var moveRight = (1 + adjustX) * ((isMobile ? 1.6 : 0.8)* window.innerWidth - size) / 2
     var moveLeft = (1 - adjustX) * (0.8 * window.innerWidth - size) / 2
-
     var blipScale = 3 / 4
     var blipTranslate = (1 - blipScale) / blipScale
 
@@ -593,7 +598,6 @@ const Radar = function (size, radar) {
     var alternativeSheetButton = alternativeDiv
       .append('div')
       .classed('multiple-sheet-button-group', true)
-
     alternativeSheetButton.append('p').text('Choose a sheet to populate radar')
     alternatives.forEach(function (alternative) {
       alternativeSheetButton
@@ -619,13 +623,15 @@ const Radar = function (size, radar) {
     currentSheet = radar.getCurrentSheet()
     var header = plotRadarHeader()
 
-    plotAlternativeRadars(alternatives, currentSheet)
+    if (alternatives.length) {
+      plotAlternativeRadars(alternatives, currentSheet)
+    }
 
     plotQuadrantButtons(quadrants, header)
 
     radarElement.style('height', size + 14 + 'px')
     svg = radarElement.append('svg').call(tip)
-    svg.attr('id', 'radar-plot').attr('width', size).attr('height', size + 14)
+    svg.attr('id', 'radar-plot').attr('width', size).attr('height', size)
 
     _.each(quadrants, function (quadrant) {
       var quadrantGroup = plotQuadrant(rings, quadrant)
